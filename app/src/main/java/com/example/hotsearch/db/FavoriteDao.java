@@ -73,4 +73,12 @@ public interface FavoriteDao {
      */
     @Query("SELECT EXISTS(SELECT 1 FROM favorite_items WHERE url = :url)")
     LiveData<Boolean> isFavorite(String url);
+
+    /**
+     * 同步检查某个 URL 是否已经被收藏。
+     * @param url 要检查的唯一链接
+     * @return true 表示已收藏，false 表示未收藏
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_items WHERE url = :url)")
+    boolean isFavoriteSync(String url);
 }

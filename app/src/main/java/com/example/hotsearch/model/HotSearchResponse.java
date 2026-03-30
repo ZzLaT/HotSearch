@@ -4,21 +4,21 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class HotSearchResponse {
-    @SerializedName("code")
-    private int code;
+    @SerializedName("type")
+    private String type;
 
-    @SerializedName("msg")
-    private String msg;
+    @SerializedName("update_time")
+    private String updateTime;
 
-    @SerializedName("data")
-    private HotSearchData data;
+    @SerializedName("list")
+    private List<HotSearchItem> list;
 
-    public int getCode() { return code; }
-    public void setCode(int code) { this.code = code; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public String getMsg() { return msg; }
-    public void setMsg(String msg) { this.msg = msg; }
+    public String getUpdateTime() { return updateTime; }
+    public void setUpdateTime(String updateTime) { this.updateTime = updateTime; }
 
-    public HotSearchData getData() { return data; }
-    public void setData(HotSearchData data) { this.data = data; }
+    public List<HotSearchItem> getList() { return list; }
+    public void setList(List<HotSearchItem> list) { this.list = list; }
 }

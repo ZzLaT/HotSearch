@@ -1,11 +1,12 @@
 package com.example.hotsearch;
 
 import android.app.Application;
+import android.util.Log;
+
+//import com.example.hotsearch.utils.ShareUtils;
 import com.example.hotsearch.utils.ThemeUtils;
 import com.orhanobut.logger.AndroidLogAdapter;
-import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
-import com.orhanobut.logger.PrettyFormatStrategy;
 
 public class MainApplication extends Application {
     @Override
@@ -13,16 +14,18 @@ public class MainApplication extends Application {
         super.onCreate();
         ThemeUtils.applyTheme(this);
 
-        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
-                .showThreadInfo(true)  // (Optional) Whether to show thread info. Default true
-                .methodCount(2)         // (Optional) How many method line to show. Default 2
-                .methodOffset(5)        // (Optional) Hides internal method calls up to offset. Default 5
-                .tag("HOT_SEARCH")      // (Optional) Global tag for every log. Default PRETTY_LOGGER
-                .build();
+        // 简化 Logger 初始化
+        Logger.addLogAdapter(new AndroidLogAdapter() {
+            @Override
+            public boolean isLoggable(int priority, String tag) {
+                return true;
+            }
+        });
 
-        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy));
+        // 测试日志输出
+        Logger.d("MainApplication initialized (logger)");
 
         // 初始化分享 SDK
-        ShareUtils.init(this);
+        //ShareUtils.init(this);
     }
 }

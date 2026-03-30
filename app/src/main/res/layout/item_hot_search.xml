@@ -30,11 +30,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="16sp"
-            app:layout_constraintEnd_toStartOf="@id/btn_favorite"
+            app:layout_constraintEnd_toStartOf="@id/btn_share"
             app:layout_constraintStart_toEndOf="@id/tv_index"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,7 +49,8 @@
             app:layout_constraintStart_toStartOf="@id/tv_title"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
-        <TextView
+        <!-- 移除平台名称显示 -->
+        <!-- <TextView
             android:id="@+id/tv_platform"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,7 +59,7 @@
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@id/tv_hot_value"
             app:layout_constraintStart_toEndOf="@id/tv_hot_value"
-            app:layout_constraintTop_toTopOf="@id/tv_hot_value" />
+            app:layout_constraintTop_toTopOf="@id/tv_hot_value" /> -->
 
         <ImageButton
             android:id="@+id/btn_share"

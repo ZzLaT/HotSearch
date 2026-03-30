@@ -38,6 +38,7 @@ public class FavoriteFragment extends Fragment {
 
     private void setupRecyclerView() {
         adapter = new HotSearchAdapter();
+        adapter.setFavoritePage(true); // 设置为收藏页面
         binding.recyclerViewFavorite.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerViewFavorite.setAdapter(adapter);
 

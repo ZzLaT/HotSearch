@@ -47,7 +47,12 @@ public class HotSearchViewModel extends AndroidViewModel {
     }
 
     public void toggleFavorite(HotSearchItem item) {
-        // This is simplified, usually we'd check if it's already a favorite
-        repository.addFavorite(item);
+        if (item.isFavorite()) {
+            repository.removeFavorite(item);
+            item.setFavorite(false);
+        } else {
+            repository.addFavorite(item);
+            item.setFavorite(true);
+        }
     }
 }

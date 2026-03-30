@@ -15,6 +15,11 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
     private OnItemClickListener listener;
     private OnFavoriteClickListener favoriteListener;
     private OnShareClickListener shareListener;
+    private boolean isFavoritePage = false;
+
+    public void setFavoritePage(boolean favoritePage) {
+        isFavoritePage = favoritePage;
+    }
 
     public interface OnItemClickListener {
         void onItemClick(HotSearchItem item);
@@ -41,7 +46,8 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
         @Override
         public boolean areContentsTheSame(@NonNull HotSearchItem oldItem, @NonNull HotSearchItem newItem) {
             return oldItem.getTitle().equals(newItem.getTitle()) &&
-                    oldItem.getHotValue().equals(newItem.getHotValue());
+                    oldItem.getHotValue().equals(newItem.getHotValue()) &&
+                    oldItem.isFavorite() == newItem.isFavorite();
         }
     };
 
@@ -89,11 +95,20 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
         }
 
         void bind(HotSearchItem item) {
-            binding.tvIndex.setText(String.valueOf(getAdapterPosition() + 1));
+            if (!isFavoritePage) {
+                binding.tvIndex.setText(String.valueOf(getAdapterPosition() + 1));
+            } else {
+                binding.tvIndex.setText(""); // 在收藏页面不显示编号
+            }
             binding.tvTitle.setText(item.getTitle());
-            binding.tvHot_value.setText(item.getHotValue());
-            binding.tvPlatform.setText(item.getPlatform());
-            // TODO: Update favorite icon based on state
+            // 只显示热度值，不显示平台名称
+            binding.tvHotValue.setText(item.getHotValue());
+            // Update favorite icon based on state
+            if (item.isFavorite()) {
+                binding.btnFavorite.setImageResource(R.drawable.ic_star_filled);
+            } else {
+                binding.btnFavorite.setImageResource(R.drawable.ic_star_outline);
+            }
         }
     }
 

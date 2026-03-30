@@ -27,6 +27,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 
     compileOptions {
@@ -41,11 +42,13 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.cardview)
     implementation(libs.viewpager2)
+    implementation("androidx.core:core:1.9.0")
 
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 
     // Room
     implementation(libs.room.runtime)
@@ -55,9 +58,8 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
 
-    // SmartRefreshLayout
-    implementation(libs.smartrefresh.layout)
-    implementation(libs.smartrefresh.header)
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // Browser
     implementation(libs.browser)
@@ -65,9 +67,12 @@ dependencies {
     // Logger
     implementation(libs.logger)
 
+    // LeakCanary - 仅在 debug 模式下检测内存泄漏
+    debugImplementation(libs.leakcanary)
+
     // Share SDKs
     implementation(libs.wechat.sdk)
-    implementation(libs.qq.sdk)
+    // implementation(libs.qq.sdk)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

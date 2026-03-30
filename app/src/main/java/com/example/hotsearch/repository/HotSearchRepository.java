@@ -14,14 +14,20 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class HotSearchRepository {
     private final HotSearchService service;
     private final FavoriteDao dao;
     private final AppExecutors executors;
-    private static final String API_KEY = "af2per5a****er5a"; // Replace with your actual key
+    private static final String API_KEY = "uapi-j5mgnnukpHXD3IN9cisUQMzSzw5iWJtB5HSLpBNL"; // Replace with your actual key from uapis.cn
 
     public HotSearchRepository(FavoriteDao dao, AppExecutors executors) {
         this.dao = dao; // 注入本地数据库 DAO，用于收藏数据的增删查
@@ -30,10 +36,46 @@ public class HotSearchRepository {
         // 配置 Retrofit 客户端：设置基础域名与 JSON 解析器
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://uapis.cn/") // 聚合热榜 API 基地址
+                .client(getUnsafeOkHttpClient()) // 使用信任所有SSL证书的OkHttpClient
                 .addConverterFactory(GsonConverterFactory.create()) // 使用 Gson 解析 JSON
                 .build();
         // 生成 API 接口实例，用于后续发起网络请求
         this.service = retrofit.create(HotSearchService.class);
+    }
+
+    // 创建一个信任所有SSL证书的OkHttpClient
+    private OkHttpClient getUnsafeOkHttpClient() {
+        try {
+            // 创建一个信任所有证书的TrustManager
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // 创建SSLContext并使用信任所有证书的TrustManager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            // 创建OkHttpClient并配置SSLContext
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0]);
+            builder.hostnameVerifier((hostname, session) -> true);
+
+
+            return builder.build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // 拉取指定平台的热搜数据，并以 Resource 封装加载/成功/错误状态暴露给上层
@@ -47,8 +89,10 @@ public class HotSearchRepository {
         final long startTime = System.currentTimeMillis();
         Logger.d("开始获取热搜, 平台: %s", platform);
 
+        // 构建Authorization头
+        String authorization = "Bearer " + API_KEY;
         // 发起 Retrofit 异步请求，避免阻塞主线程
-        service.getHotSearch(platform, API_KEY).enqueue(new Callback<HotSearchResponse>() {
+        service.getHotSearch(platform, authorization).enqueue(new Callback<HotSearchResponse>() {
             @Override
             public void onResponse(@NonNull Call<HotSearchResponse> call, @NonNull Response<HotSearchResponse> response) {
                 // 计算耗时
@@ -56,22 +100,35 @@ public class HotSearchRepository {
                 // 先判断 HTTP 层是否成功，且有响应体
                 if (response.isSuccessful() && response.body() != null) {
                     HotSearchResponse body = response.body();
-                    // 再判断业务层 code 与 data 是否有效
-                    if (body.getCode() == 200 && body.getData() != null) {
-                        List<HotSearchItem> items = body.getData().getList();
-                        String actualType = body.getData().getType(); // 获取接口返回的真实平台 type
+                    // 检查响应是否包含数据
+                    if (body.getList() != null && !body.getList().isEmpty()) {
+                        List<HotSearchItem> items = body.getList();
+                        String actualType = body.getType(); // 获取接口返回的真实平台 type
                         Logger.i("获取成功! 平台: %s (接口返回: %s), 耗时: %dms, 条数: %d", platform, actualType, duration, items.size());
                         
                         // 为每个 item 标记平台，使用接口返回的 actualType，便于后续入库/过滤
                         for (HotSearchItem item : items) {
                             item.setPlatform(actualType);
+                            // 暂时设置为未收藏，稍后在后台线程中更新
+                            item.setFavorite(false);
                         }
-                        // 以 Success 状态返回数据
-                        result.setValue(Resource.success(items));
+                        
+                        // 在后台线程中检查收藏状态
+                        executors.diskIO().execute(() -> {
+                            for (HotSearchItem item : items) {
+                                boolean isFavorite = dao.isFavoriteSync(item.getUrl());
+                                item.setFavorite(isFavorite);
+                            }
+                            // 回到主线程更新UI
+                            executors.mainThread().execute(() -> {
+                                result.setValue(Resource.success(items));
+                            });
+                        });
+                        return;
                     } else {
-                        // 业务码或数据异常，返回 Error 状态
-                        Logger.e("API 业务错误! 平台: %s, Code: %d, Msg: %s", platform, body.getCode(), body.getMsg());
-                        result.setValue(Resource.error("数据异常: " + body.getMsg(), null));
+                        // 数据异常，返回 Error 状态
+                        Logger.e("API 业务错误! 平台: %s, 无数据返回", platform);
+                        result.setValue(Resource.error("数据异常: 无数据返回", null));
                     }
                 } else {
                     // HTTP 层失败（如 4xx/5xx），返回 Error 状态

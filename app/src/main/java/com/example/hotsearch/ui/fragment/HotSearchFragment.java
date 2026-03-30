@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +27,9 @@ import com.google.android.material.tabs.TabLayout;
 import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class HotSearchFragment extends Fragment {
     private FragmentHotSearchBinding binding;
@@ -35,6 +38,10 @@ public class HotSearchFragment extends Fragment {
     private final Handler clockHandler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd EEE", Locale.getDefault());
+    // 保存每个平台的滑动位置
+    private final Map<String, Integer> platformScrollPositions = new HashMap<>();
+    // 当前选中的平台
+    private String currentPlatform;
 
     private final Runnable clockRunnable = new Runnable() {
         @Override
@@ -54,6 +61,8 @@ public class HotSearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Logger.d("onCreateView");
         binding = FragmentHotSearchBinding.inflate(inflater, container, false);
+        // 测试日志输出
+        Logger.d("HotSearchFragment onCreateView");
         return binding.getRoot();
     }
 
@@ -89,14 +98,20 @@ public class HotSearchFragment extends Fragment {
         adapter.setOnFavoriteClickListener(item -> {
             Logger.d("点击收藏按钮: %s", item.getTitle());
             viewModel.toggleFavorite(item);
-            Toast.makeText(getContext(), "已收藏", Toast.LENGTH_SHORT).show();
+            // 通知适配器数据发生了变化，更新UI
+            adapter.notifyItemChanged(adapter.getCurrentList().indexOf(item));
+            if (item.isFavorite()) {
+                Toast.makeText(getContext(), "已收藏", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "已取消收藏", Toast.LENGTH_SHORT).show();
+            }
         });
 
         adapter.setOnShareClickListener(this::showShareDialog);
     }
 
     private void showShareDialog(HotSearchItem item) {
-        final String[] shareOptions = {"分享到微信好友", "分享到朋友圈", "分享到QQ好友"};
+        final String[] shareOptions = {"微信好友", "朋友圈"};
         new AlertDialog.Builder(getContext())
                 .setTitle("分享到...")
                 .setItems(shareOptions, (dialog, which) -> {
@@ -106,9 +121,6 @@ public class HotSearchFragment extends Fragment {
                             break;
                         case 1: // 朋友圈
                             ShareUtils.shareToWechat(getContext(), item.getUrl(), item.getTitle(), "来自「今日热搜」的分享", true);
-                            break;
-                        case 2: // QQ好友
-                            ShareUtils.shareToQQ(getContext(), item.getUrl(), item.getTitle(), "来自「今日热搜」的分享");
                             break;
                     }
                 })
@@ -137,6 +149,18 @@ public class HotSearchFragment extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 String platform = platforms[tab.getPosition()];
                 Logger.d("切换平台至: %s", platform);
+                
+                // 保存当前平台的滑动位置
+                if (currentPlatform != null) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
+                    if (layoutManager != null) {
+                        int scrollPosition = layoutManager.findFirstVisibleItemPosition();
+                        platformScrollPositions.put(currentPlatform, scrollPosition);
+                    }
+                }
+                
+                // 切换平台
+                currentPlatform = platform;
                 viewModel.setPlatform(platform);
             }
 
@@ -147,11 +171,13 @@ public class HotSearchFragment extends Fragment {
             }
         });
 
-        viewModel.setPlatform(platforms[0]);
+        // 初始化当前平台
+        currentPlatform = platforms[0];
+        viewModel.setPlatform(currentPlatform);
     }
 
     private void setupRefresh() {
-        binding.refreshLayout.setOnRefreshListener(refreshLayout -> {
+        binding.refreshLayout.setOnRefreshListener(() -> {
             Logger.d("用户触发下拉刷新");
             viewModel.refresh();
         });
@@ -171,16 +197,42 @@ public class HotSearchFragment extends Fragment {
             switch (resource.status) {
                 case LOADING:
                     Logger.d("数据状态: LOADING");
-                    binding.refreshLayout.autoRefresh();
+                    binding.refreshLayout.setRefreshing(true);
                     break;
                 case SUCCESS:
                     Logger.d("数据状态: SUCCESS, 数量: %d", (resource.data != null ? resource.data.size() : 0));
-                    binding.refreshLayout.finishRefresh();
+                    binding.refreshLayout.setRefreshing(false);
+                    
+                    final long renderStartTime = System.currentTimeMillis();
+                    final boolean hasScrollPosition = currentPlatform != null
+                            && platformScrollPositions.containsKey(currentPlatform);
+                    final int scrollPosition = hasScrollPosition
+                            ? platformScrollPositions.get(currentPlatform) : 0;
+                    
                     adapter.submitList(resource.data);
+                    
+                    binding.recyclerView.post(() -> {
+                        binding.recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
+                                new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                binding.recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                if (hasScrollPosition) {
+                                    LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
+                                    if (layoutManager != null) {
+                                        layoutManager.scrollToPositionWithOffset(scrollPosition, 0);
+                                    }
+                                }
+                                long renderDuration = System.currentTimeMillis() - renderStartTime;
+                                Logger.i("列表渲染完成, 耗时: %dms, 恢复位置: %s%d",
+                                        renderDuration, hasScrollPosition ? "item" : "无", scrollPosition);
+                            }
+                        });
+                    });
                     break;
                 case ERROR:
                     Logger.e("数据状态: ERROR, 消息: %s", resource.message);
-                    binding.refreshLayout.finishRefresh(false);
+                    binding.refreshLayout.setRefreshing(false);
                     Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();
                     break;
             }

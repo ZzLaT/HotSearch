@@ -20,6 +20,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // 测试日志输出
+        com.orhanobut.logger.Logger.d("MainActivity onCreate");
+
         // 配置 ViewPager2 适配器，用于切换首页、收藏、设置页面
         binding.viewPager.setAdapter(new FragmentStateAdapter(this) {
             @NonNull
