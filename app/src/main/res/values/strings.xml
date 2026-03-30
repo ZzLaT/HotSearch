@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">HotSearch</string>
+    <string name="app_name">今日热搜</string>
+    <string name="nav_home">首页</string>
+    <string name="nav_favorite">收藏</string>
+    <string name="nav_settings">设置</string>
+    <string name="main_title">今日热榜</string>
+    <string name="sub_title">汇聚全网热点...</string>
+    <string name="empty_message">该话题暂无详情链接，请稍后再试</string>
+    <string name="loading">正在加载中...</string>
+    <string name="retry">点击重试</string>
+    <string name="weibo">微博</string>
+    <string name="zhihu">知乎</string>
+    <string name="baidu">百度</string>
+    <string name="douyin">抖音</string>
+    <string name="bilibili">B站</string>
+    <string name="kuaishou">快手</string>
+    <string name="hupu">虎扑</string>
+    <string name="toutiao">今日头条</string>
 </resources>
