@@ -3,7 +3,7 @@ package com.example.hotsearch;
 import android.app.Application;
 import android.util.Log;
 
-//import com.example.hotsearch.utils.ShareUtils;
+import com.example.hotsearch.utils.ShareUtils;
 import com.example.hotsearch.utils.ThemeUtils;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
@@ -26,6 +26,6 @@ public class MainApplication extends Application {
         Logger.d("MainApplication initialized (logger)");
 
         // 初始化分享 SDK
-        //ShareUtils.init(this);
+        ShareUtils.init(this);
     }
 }

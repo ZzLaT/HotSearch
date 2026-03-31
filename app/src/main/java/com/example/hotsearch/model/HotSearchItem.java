@@ -32,6 +32,7 @@ public class HotSearchItem {
     private String platform; // 平台来源 (如: bilibili, weibo)
     private long timestamp; // 收藏时的时间戳，用于排序
     private boolean isFavorite; // 收藏状态
+    private String updateTime; // 接口返回的更新时间
 
     public HotSearchItem() {
         // Room 需要一个无参构造函数
@@ -59,4 +60,7 @@ public class HotSearchItem {
 
     public boolean isFavorite() { return isFavorite; }
     public void setFavorite(boolean favorite) { isFavorite = favorite; }
+
+    public String getUpdateTime() { return updateTime; }
+    public void setUpdateTime(String updateTime) { this.updateTime = updateTime; }
 }

@@ -106,9 +106,11 @@ public class HotSearchRepository {
                         String actualType = body.getType(); // 获取接口返回的真实平台 type
                         Logger.i("获取成功! 平台: %s (接口返回: %s), 耗时: %dms, 条数: %d", platform, actualType, duration, items.size());
                         
-                        // 为每个 item 标记平台，使用接口返回的 actualType，便于后续入库/过滤
+                        // 为每个 item 标记平台和更新时间，使用接口返回的 actualType 和 updateTime
+                        String updateTime = body.getUpdateTime();
                         for (HotSearchItem item : items) {
                             item.setPlatform(actualType);
+                            item.setUpdateTime(updateTime);
                             // 暂时设置为未收藏，稍后在后台线程中更新
                             item.setFavorite(false);
                         }

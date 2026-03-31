@@ -10,7 +10,7 @@ import com.example.hotsearch.model.HotSearchItem;
  * Room 数据库的主类，作为数据库的持有者和主访问点。
  * 使用单例模式确保在整个应用中只有一个数据库实例。
  */
-@Database(entities = {HotSearchItem.class}, version = 2, exportSchema = false)
+@Database(entities = {HotSearchItem.class}, version = 3, exportSchema = false)
 // entities: 定义数据库包含哪些表 (实体类)
 // version: 数据库版本号，用于数据库升级
 // exportSchema: 是否导出数据库结构到 JSON 文件，此处禁用

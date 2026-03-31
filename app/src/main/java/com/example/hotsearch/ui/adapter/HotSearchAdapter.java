@@ -175,14 +175,13 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
 
                 // 尝试使用 Glide 加载网络图标
                 String iconUrl = PlatformIconUtil.getPlatformIconUrl(platform);
-                int fallbackIconResId = PlatformIconUtil.getPlatformIconResId(platform);
-                
+                // int fallbackIconResId = PlatformIconUtil.getPlatformIconResId(platform);
                 if (iconUrl != null) {
                     Logger.d("使用 Glide 加载网络图标: %s -> %s", platform, iconUrl);
-                    // 使用 Glide 加载网络图标，设置占位图和错误图
+                    // 使用 Glide 加载网络图标，设置空占位图和错误图
                     RequestOptions options = new RequestOptions()
-                            .placeholder(fallbackIconResId) // 加载中显示本地图标
-                            .error(fallbackIconResId) // 加载失败显示本地图标
+                            .placeholder(0) // 加载中显示空图标       fallbackIconResId
+                            .error(0) // 加载失败显示空图标           fallbackIconResId
                             .diskCacheStrategy(DiskCacheStrategy.ALL); // 缓存策略
                     
                     Glide.with(binding.ivPlatformIcon.getContext())
@@ -190,15 +189,25 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
                             .apply(options)
                             .into(binding.ivPlatformIcon);
                 } else {
-                    // 如果没有网络图标 URL，则使用本地图标
-                    Logger.d("使用本地图标: %s -> %d", platform, fallbackIconResId);
-                    binding.ivPlatformIcon.setImageResource(fallbackIconResId);
+                    // 如果没有网络图标 URL，则显示空图标
+                    Logger.d("显示空图标: %s", platform);
+                    binding.ivPlatformIcon.setImageResource(0);  //fallbackIconResId
                 }
             }
 
             // 通用字段绑定：标题与热度
             binding.tvTitle.setText(item.getTitle());
             binding.tvHotValue.setText(item.getHotValue());
+            
+            // 显示更新时间，只保留年月日小时分钟
+            String updateTime = item.getUpdateTime();
+            if (updateTime != null && !updateTime.isEmpty()) {
+                // 处理时间格式，例如：2024-01-01 12:34:56 -> 2024-01-01 12:34
+                String formattedTime = formatUpdateTime(updateTime);
+                binding.tvUpdateTime.setText(formattedTime);
+            } else {
+                binding.tvUpdateTime.setText("");
+            }
 
             // 收藏状态切换图标
             if (item.isFavorite()) {
@@ -224,6 +233,49 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
             if (url.contains("toutiao.com")) return "toutiao";
             if (url.contains("baidu.com")) return "baidu";
             return "unknown";
+        }
+        
+        /**
+         * 格式化更新时间，只保留年月日小时分钟
+         * @param updateTime 原始更新时间字符串
+         * @return 格式化后的时间字符串
+         */
+        private String formatUpdateTime(String updateTime) {
+            if (updateTime == null || updateTime.isEmpty()) {
+                return "";
+            }
+            
+            // 处理常见的时间格式
+            // 格式1: 2024-01-01 12:34:56
+            if (updateTime.contains(" ")) {
+                String[] parts = updateTime.split(" ");
+                if (parts.length >= 2) {
+                    String timePart = parts[1];
+                    if (timePart.contains(":")) {
+                        String[] timeComponents = timePart.split(":");
+                        if (timeComponents.length >= 2) {
+                            return parts[0] + " " + timeComponents[0] + ":" + timeComponents[1];
+                        }
+                    }
+                }
+            }
+            
+            // 格式2: 2024-01-01T12:34:56
+            if (updateTime.contains("T")) {
+                String[] parts = updateTime.split("T");
+                if (parts.length >= 2) {
+                    String timePart = parts[1];
+                    if (timePart.contains(":")) {
+                        String[] timeComponents = timePart.split(":");
+                        if (timeComponents.length >= 2) {
+                            return parts[0] + " " + timeComponents[0] + ":" + timeComponents[1];
+                        }
+                    }
+                }
+            }
+            
+            // 如果无法解析，返回原始时间
+            return updateTime;
         }
     }
 
