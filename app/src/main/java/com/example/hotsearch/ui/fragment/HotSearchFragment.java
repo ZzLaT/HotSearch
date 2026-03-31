@@ -60,9 +60,11 @@ public class HotSearchFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Logger.d("onCreateView");
+        // Fragment 的视图由 FragmentManager 管理：这里使用系统传入的 inflater/container 来创建 View
+        // container 是 Fragment 要挂载到的父容器；attachToRoot 传 false 表示先不直接挂载，由系统在合适时机添加
         binding = FragmentHotSearchBinding.inflate(inflater, container, false);
-        // 测试日志输出
         Logger.d("HotSearchFragment onCreateView");
+        // Fragment 通过返回根视图告诉系统“我的 UI 长什么样”，而不是像 Activity 那样 setContentView
         return binding.getRoot();
     }
 
@@ -208,7 +210,8 @@ public class HotSearchFragment extends Fragment {
                             && platformScrollPositions.containsKey(currentPlatform);
                     final int scrollPosition = hasScrollPosition
                             ? platformScrollPositions.get(currentPlatform) : 0;
-                    
+                    //submitList(...) 是 AndroidX RecyclerView 的 ListAdapter （以及内部用到的 AsyncListDiffer ）提供的方法 ，
+                    // 用来把“新的列表数据”提交给 Adapter，让它自动计算差异并刷新 RecyclerView。
                     adapter.submitList(resource.data);
                     
                     binding.recyclerView.post(() -> {

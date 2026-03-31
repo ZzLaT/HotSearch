@@ -17,8 +17,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 初始化 ViewBinding 并设置内容视图
+        // Activity 的 UI 入口：用 Activity 自己的 LayoutInflater 创建视图层级
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        // Activity 需要把根视图交给 Window 来显示，因此调用 setContentView
         setContentView(binding.getRoot());
 
         // 测试日志输出
