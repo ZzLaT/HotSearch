@@ -9,6 +9,7 @@ import com.example.hotsearch.databinding.ActivityMainBinding;
 import com.example.hotsearch.ui.fragment.FavoriteFragment;
 import com.example.hotsearch.ui.fragment.HotSearchFragment;
 import com.example.hotsearch.ui.fragment.SettingsFragment;
+import com.orhanobut.logger.Logger;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding; // 视图绑定对象
@@ -46,12 +47,15 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == com.example.hotsearch.R.id.nav_home) {
+                Logger.d("切换到底部导航: 首页");
                 binding.viewPager.setCurrentItem(0, false); // false 表示禁用平滑滚动
                 return true;
             } else if (itemId == com.example.hotsearch.R.id.nav_favorite) {
+                Logger.d("切换到底部导航: 收藏");
                 binding.viewPager.setCurrentItem(1, false);
                 return true;
             } else if (itemId == com.example.hotsearch.R.id.nav_settings) {
+                Logger.d("切换到底部导航: 设置");
                 binding.viewPager.setCurrentItem(2, false);
                 return true;
             }

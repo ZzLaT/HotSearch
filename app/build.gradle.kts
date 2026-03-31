@@ -70,6 +70,10 @@ dependencies {
     // LeakCanary - 仅在 debug 模式下检测内存泄漏
     debugImplementation(libs.leakcanary)
 
+    // Glide - 图片加载库
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
+
     // Share SDKs
     implementation(libs.wechat.sdk)
     // implementation(libs.qq.sdk)

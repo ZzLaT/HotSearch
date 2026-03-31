@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.hotsearch.R;
 import com.example.hotsearch.databinding.ItemHotSearchBinding;
 import com.example.hotsearch.model.HotSearchItem;
+import com.example.hotsearch.utils.PlatformIconUtil;
+import com.orhanobut.logger.Logger;
 
 public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapter.ViewHolder> {
     private OnItemClickListener listener;
@@ -45,9 +47,12 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
 
         @Override
         public boolean areContentsTheSame(@NonNull HotSearchItem oldItem, @NonNull HotSearchItem newItem) {
+            String oldPlatform = oldItem.getPlatform() != null ? oldItem.getPlatform() : "";
+            String newPlatform = newItem.getPlatform() != null ? newItem.getPlatform() : "";
             return oldItem.getTitle().equals(newItem.getTitle()) &&
                     oldItem.getHotValue().equals(newItem.getHotValue()) &&
-                    oldItem.isFavorite() == newItem.isFavorite();
+                    oldItem.isFavorite() == newItem.isFavorite() &&
+                    oldPlatform.equals(newPlatform);
         }
     };
 
@@ -95,20 +100,45 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
         }
 
         void bind(HotSearchItem item) {
+            Logger.d("绑定数据: %s, 平台: %s, 收藏状态: %b", item.getTitle(), item.getPlatform(), item.isFavorite());
+            
             if (!isFavoritePage) {
                 binding.tvIndex.setText(String.valueOf(getAdapterPosition() + 1));
+                binding.ivPlatformIcon.setVisibility(View.GONE);
             } else {
-                binding.tvIndex.setText(""); // 在收藏页面不显示编号
+                binding.tvIndex.setText("");
+                binding.ivPlatformIcon.setVisibility(View.VISIBLE);
+                
+                String platform = item.getPlatform();
+                if (platform == null || platform.isEmpty()) {
+                    platform = inferPlatformFromUrl(item.getUrl());
+                    Logger.d("从URL推断平台: %s -> %s", item.getUrl(), platform);
+                }
+                
+                int iconResId = PlatformIconUtil.getPlatformIconResId(platform);
+                Logger.d("加载平台图标: %s -> %d", platform, iconResId);
+                binding.ivPlatformIcon.setImageResource(iconResId);
             }
             binding.tvTitle.setText(item.getTitle());
-            // 只显示热度值，不显示平台名称
             binding.tvHotValue.setText(item.getHotValue());
-            // Update favorite icon based on state
             if (item.isFavorite()) {
                 binding.btnFavorite.setImageResource(R.drawable.ic_star_filled);
             } else {
                 binding.btnFavorite.setImageResource(R.drawable.ic_star_outline);
             }
+        }
+
+        private String inferPlatformFromUrl(String url) {
+            if (url == null) return "unknown";
+            if (url.contains("bilibili.com") || url.contains("b23.tv")) return "bilibili";
+            if (url.contains("weibo.com") || url.contains("weibo.cn")) return "weibo";
+            if (url.contains("zhihu.com")) return "zhihu";
+            if (url.contains("douyin.com") || url.contains("iesdouyin.com")) return "douyin";
+            if (url.contains("kuaishou.com")) return "kuaishou";
+            if (url.contains("hupu.com")) return "hupu";
+            if (url.contains("toutiao.com")) return "toutiao";
+            if (url.contains("baidu.com")) return "baidu";
+            return "unknown";
         }
     }
 

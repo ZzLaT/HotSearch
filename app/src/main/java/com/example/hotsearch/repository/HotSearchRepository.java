@@ -163,16 +163,34 @@ public class HotSearchRepository {
     }
 
     public void addFavorite(HotSearchItem item) {
-        Logger.d("尝试添加收藏: %s", item.getTitle());
+        Logger.d("尝试添加收藏: %s, 平台: %s", item.getTitle(), item.getPlatform());
         executors.diskIO().execute(() -> {
             try {
+                if (item.getPlatform() == null || item.getPlatform().isEmpty()) {
+                    String inferredPlatform = inferPlatformFromUrl(item.getUrl());
+                    item.setPlatform(inferredPlatform);
+                    Logger.d("从URL推断平台: %s -> %s", item.getUrl(), inferredPlatform);
+                }
                 item.setTimestamp(System.currentTimeMillis());
                 dao.insert(item);
-                Logger.i("收藏成功: %s", item.getTitle());
+                Logger.i("收藏成功: %s, 平台: %s", item.getTitle(), item.getPlatform());
             } catch (Exception e) {
                 Logger.e(e, "收藏失败: %s", item.getTitle());
             }
         });
+    }
+
+    private String inferPlatformFromUrl(String url) {
+        if (url == null) return "unknown";
+        if (url.contains("bilibili.com") || url.contains("b23.tv")) return "bilibili";
+        if (url.contains("weibo.com") || url.contains("weibo.cn")) return "weibo";
+        if (url.contains("zhihu.com")) return "zhihu";
+        if (url.contains("douyin.com") || url.contains("iesdouyin.com")) return "douyin";
+        if (url.contains("kuaishou.com")) return "kuaishou";
+        if (url.contains("hupu.com")) return "hupu";
+        if (url.contains("toutiao.com")) return "toutiao";
+        if (url.contains("baidu.com")) return "baidu";
+        return "unknown";
     }
 
     public void removeFavorite(HotSearchItem item) {

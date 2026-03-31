@@ -16,6 +16,7 @@ recyclerview = "1.3.2"
 cardview = "1.0.0"
 logger = "2.2.0"
 leakcanary = "2.12"
+glide = "4.16.0"
 wechat-sdk = "6.8.0"
 qq-sdk = "3.5.10"
 
@@ -41,6 +42,8 @@ recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 logger = { group = "com.orhanobut", name = "logger", version.ref = "logger" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 wechat-sdk = { group = "com.tencent.mm.opensdk", name = "wechat-sdk-android-without-mta", version.ref = "wechat-sdk" }
 qq-sdk = { group = "com.tencent.tauth", name = "qqopensdk", version.ref = "qq-sdk" }
 
