@@ -18,6 +18,11 @@ import com.example.hotsearch.model.HotSearchItem;
 import com.example.hotsearch.utils.PlatformIconUtil;
 import com.orhanobut.logger.Logger;
 
+// Glide 图片加载库
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+
 /**
  * 热搜列表 Adapter：
  * - 继承 ListAdapter：内置异步 diff（配合 DIFF_CALLBACK）与 submitList 更新机制
@@ -168,10 +173,27 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
                     Logger.d("从URL推断平台: %s -> %s", item.getUrl(), platform);
                 }
 
-                // 根据平台字符串映射到资源 id，然后设置到 ImageView
-                int iconResId = PlatformIconUtil.getPlatformIconResId(platform);
-                Logger.d("加载平台图标: %s -> %d", platform, iconResId);
-                binding.ivPlatformIcon.setImageResource(iconResId);
+                // 尝试使用 Glide 加载网络图标
+                String iconUrl = PlatformIconUtil.getPlatformIconUrl(platform);
+                int fallbackIconResId = PlatformIconUtil.getPlatformIconResId(platform);
+                
+                if (iconUrl != null) {
+                    Logger.d("使用 Glide 加载网络图标: %s -> %s", platform, iconUrl);
+                    // 使用 Glide 加载网络图标，设置占位图和错误图
+                    RequestOptions options = new RequestOptions()
+                            .placeholder(fallbackIconResId) // 加载中显示本地图标
+                            .error(fallbackIconResId) // 加载失败显示本地图标
+                            .diskCacheStrategy(DiskCacheStrategy.ALL); // 缓存策略
+                    
+                    Glide.with(binding.ivPlatformIcon.getContext())
+                            .load(iconUrl)
+                            .apply(options)
+                            .into(binding.ivPlatformIcon);
+                } else {
+                    // 如果没有网络图标 URL，则使用本地图标
+                    Logger.d("使用本地图标: %s -> %d", platform, fallbackIconResId);
+                    binding.ivPlatformIcon.setImageResource(fallbackIconResId);
+                }
             }
 
             // 通用字段绑定：标题与热度
