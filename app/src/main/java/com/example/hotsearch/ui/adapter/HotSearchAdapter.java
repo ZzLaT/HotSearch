@@ -185,9 +185,9 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
                             .diskCacheStrategy(DiskCacheStrategy.ALL); // 缓存策略
                     
                     Glide.with(binding.ivPlatformIcon.getContext())
-                            .load(iconUrl)
+                            .load(iconUrl)  // 绑定生命周期（Activity/Fragment 销毁时自动停止加载，防止内存泄漏）
                             .apply(options)
-                            .into(binding.ivPlatformIcon);
+                            .into(binding.ivPlatformIcon); // 开启请求,先查内存缓存 → 再查磁盘缓存 → 最后网络请求,解码、缩放、显示
                 } else {
                     // 如果没有网络图标 URL，则显示空图标
                     Logger.d("显示空图标: %s", platform);

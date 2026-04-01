@@ -34,8 +34,6 @@ public class PlatformIconUtil {
         PLATFORM_ICON_URLS.put("weibo", "https://www.weibo.com/favicon.ico");
         PLATFORM_ICON_URLS.put("zhihu", "https://www.zhihu.com/favicon.ico");
         PLATFORM_ICON_URLS.put("douyin", "https://www.douyin.com/favicon.ico");
-        // 快手的favicon.ico返回405错误，使用本地图标作为主要方案
-        // 国内无法访问Google Favicon API，保留本地图标作为备用
         PLATFORM_ICON_URLS.put("kuaishou", "https://www.kuaishou.com/favicon.ico");
         PLATFORM_ICON_URLS.put("hupu", "https://www.hupu.com/favicon.ico");
         PLATFORM_ICON_URLS.put("toutiao", "https://www.toutiao.com/favicon.ico");

@@ -86,6 +86,9 @@ public class FavoriteFragment extends Fragment {
     private void observeFavorites() {
         viewModel.getFavorites().observe(getViewLifecycleOwner(), favorites -> {
             Logger.d("收藏数据更新: 数量=%d", (favorites != null ? favorites.size() : 0));
+            // ListAdapter 提供的方法，用来把“新的数据列表”交给 Adapter：
+            // 内部会用 DiffUtil.ItemCallback 对比旧列表和新列表，计算哪些 item 变了/新增/删除
+            // 然后只对变化的部分触发 RecyclerView 刷新
             adapter.submitList(favorites);
         });
     }
