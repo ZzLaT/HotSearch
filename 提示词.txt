@@ -1,0 +1,24 @@
+我准备面试安卓客户端开发实习，需要写一份简历，现在还差“项目经验”还没写，项目经验我打算写这个项目(今日热搜app)，现在要求你根据这个项目写一段项目经验。比如解决了xx问题，实现多少的提升或者降低xx。遇到什么问题，解决之后带来xx的优化结果。最好能量化这个结果。
+第一步：你需要读完整个项目
+第二步：分析
+第三步：总结
+
+
+
+- 项目简介：聚合哔哩哔哩/微博/知乎/抖音/快手等多平台热榜；支持下拉刷新、平台切换、收藏与按平台筛选、深色模式、点击跳转详情与微信分享。
+- 技术栈：Java、MVVM（ViewModel + LiveData + Repository）、Retrofit/OkHttp/Gson、Room、RecyclerView（ListAdapter + DiffUtil）、Glide、Material、Custom Tabs、ViewBinding/DataBinding。
+
+- 设计并落地 MVVM 分层：使用 switchMap 监听平台变化自动触发刷新， Resource 统一封装 Loading/Success/Error，降低 UI 层状态处理复杂度。
+- 封装网络数据层：基于 Retrofit 异步请求热榜接口，统一处理 HTTP/业务异常与失败回调，并记录请求耗时日志便于排查。
+- 实现本地收藏能力：Room 以 URL 作为主键实现收藏增删查；结合线程池将 DB 操作切到 diskIO ，并在拉取列表后异步回填收藏状态，保证主线程流畅。
+- 优化列表体验与性能：RecyclerView 使用 ListAdapter+DiffUtil 做增量刷新；切换平台保存/恢复滚动位置；下拉刷新与数据状态联动。
+- 完成多页面与扩展功能：BottomNavigation + ViewPager2 组织“热榜/收藏/设置”；深色模式持久化；Glide 加载平台图标；Custom Tabs/系统 Intent 打开详情；集成微信分享入口。
+
+
+- 网络请求（Retrofit） ：基于 Retrofit + OkHttp + Gson 封装热榜接口请求，使用异步回调拉取 8 平台榜单数据，并对请求耗时进行埋点记录，统一处理加载/成功/失败状态以提升弱网下的可用性。
+- 列表渲染与性能优化（RecyclerView + DiffUtil） ：首页/收藏页使用 RecyclerView（ListAdapter）展示数据，通过 DiffUtil 差分计算实现局部刷新，避免 notifyDataSetChanged 全量重绘；在 500 条收藏数据规模下，将更新从 notifyDataSetChanged 全量重绑优化为 DiffUtil 差分更新， 可见区 onBind 次数约从 10 次降到 1 次 ，降低主线程重绘与卡顿风险。
+- Tab 切换体验优化（滑动位置保存） ：在平台 Tab 切换时缓存当前 RecyclerView 首个可见位置，并在切回平台后恢复滚动 offset，实现多平台之间“续读”，减少重复滚动定位操作。
+- 微信分享 ：集成微信 OpenSDK，封装分享工具类（网页分享：好友/朋友圈），构造 WXWebpageObject + WXMediaMessage 并发送请求，处理分享回调结果提示。
+- 浏览器跳转（多级兜底） ：点击条目后优先通过 Intent.ACTION_VIEW 尝试唤起对应 App，失败则使用 Chrome Custom Tabs 应用内打开，最终兜底系统浏览器，兼容不同机型与环境。
+
+在 500 条收藏数据规模下，将更新从 notifyDataSetChanged 全量重绑优化为 DiffUtil 差分更新， 可见区 onBind 次数约从 10 次降到 1 次（≈90% 减少） ，降低主线程重绘与卡顿风险。那如果面试官问，那我使用notifyItemRemoved 的onBind次数不也是一次吗？
