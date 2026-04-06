@@ -17,6 +17,7 @@ public class HotSearchViewModel extends AndroidViewModel {
     private final HotSearchRepository repository;
     private final MutableLiveData<String> platform = new MutableLiveData<>();
     private final LiveData<Resource<List<HotSearchItem>>> hotSearchData;
+    private final LiveData<List<HotSearchItem>> allFavorites;
 
     public HotSearchViewModel(@NonNull Application application) {
         super(application);
@@ -28,6 +29,9 @@ public class HotSearchViewModel extends AndroidViewModel {
         // 每当调用 setPlatform() 修改平台时，都会自动触发 repository.getHotSearch(platform) 重新获取数据。
         // 这确保了 hotSearchData 始终与当前选中的平台保持同步。
         hotSearchData = Transformations.switchMap(platform, repository::getHotSearch);
+        
+        // 观察所有收藏项，用于同步收藏状态
+        allFavorites = repository.getAllFavorites();
     }
 
     public void setPlatform(String p) {
@@ -37,6 +41,10 @@ public class HotSearchViewModel extends AndroidViewModel {
 
     public LiveData<Resource<List<HotSearchItem>>> getHotSearchData() {
         return hotSearchData;
+    }
+
+    public LiveData<List<HotSearchItem>> getAllFavorites() {
+        return allFavorites;
     }
 
     public void refresh() {

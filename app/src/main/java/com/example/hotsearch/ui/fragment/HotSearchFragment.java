@@ -240,6 +240,34 @@ public class HotSearchFragment extends Fragment {
                     break;
             }
         });
+
+        // 观察收藏列表变化，同步更新首页的收藏状态
+        viewModel.getAllFavorites().observe(getViewLifecycleOwner(), favorites -> {
+            if (favorites == null) return;
+            
+            // 创建收藏 URL 的 Set，用于快速查找
+            java.util.Set<String> favoriteUrls = new java.util.HashSet<>();
+            for (HotSearchItem item : favorites) {
+                favoriteUrls.add(item.getUrl());
+            }
+            
+            // 更新当前列表中每个 item 的收藏状态
+            java.util.List<HotSearchItem> currentList = adapter.getCurrentList();
+            boolean hasChanges = false;
+            for (int i = 0; i < currentList.size(); i++) {
+                HotSearchItem item = currentList.get(i);
+                boolean isFavorite = favoriteUrls.contains(item.getUrl());
+                if (item.isFavorite() != isFavorite) {
+                    item.setFavorite(isFavorite);
+                    adapter.notifyItemChanged(i);
+                    hasChanges = true;
+                }
+            }
+            
+            if (hasChanges) {
+                Logger.d("收藏状态已同步更新");
+            }
+        });
     }
 
     @Override

@@ -4,7 +4,6 @@
 第三步：总结
 
 
-
 - 项目简介：聚合哔哩哔哩/微博/知乎/抖音/快手等多平台热榜；支持下拉刷新、平台切换、收藏与按平台筛选、深色模式、点击跳转详情与微信分享。
 - 技术栈：Java、MVVM（ViewModel + LiveData + Repository）、Retrofit/OkHttp/Gson、Room、RecyclerView（ListAdapter + DiffUtil）、Glide、Material、Custom Tabs、ViewBinding/DataBinding。
 
@@ -22,3 +21,32 @@
 - 浏览器跳转（多级兜底） ：点击条目后优先通过 Intent.ACTION_VIEW 尝试唤起对应 App，失败则使用 Chrome Custom Tabs 应用内打开，最终兜底系统浏览器，兼容不同机型与环境。
 
 在 500 条收藏数据规模下，将更新从 notifyDataSetChanged 全量重绑优化为 DiffUtil 差分更新， 可见区 onBind 次数约从 10 次降到 1 次（≈90% 减少） ，降低主线程重绘与卡顿风险。那如果面试官问，那我使用notifyItemRemoved 的onBind次数不也是一次吗？
+
+
+
+我准备面试安卓客户端开发实习，需要写一份简历，现在还差“项目经验”还没写，项目经验我打算写这个项目(今日热搜app)，现在要求你根据这个项目写一段项目经验。撰写项目经历时，应围绕**“实现了什么功能-> 怎么做的（技术细节）-> 解决了什么问题（难点）-> 取得了什么效果（成果）”** 的思路展开。每条最多50字左右总结。
+第一步：你需要读完整个项目
+第二步：分析
+第三步：总结
+格式如下：
+项目简介：
+技术栈：
+1.采用单Activity架构模式
+2.数据获取与展示
+3.优化列表性能
+4.收藏功能
+5.主题切换功能
+6.分享功能
+
+2025.12-2026-02                                             今日热搜App开发
+项目简介：今日热搜app是一个聚合多平台热搜数据的应用，支持多个平台的热搜数据展示、收藏、分享等功能。
+技术栈：Java、MVVM、Retrofit、Gson、Room、ViewModel、LiveData、RecyclerView、微信SDK
+	单Activity架构模式 ：实现MainActivity + ViewPager2 + FragmentStateAdapter架构，管理首页、收藏、设置三个Fragment，通过底部导航栏控制页面切换，解决多Activity切换导致的内存占用问题，提升应用流畅度。
+	数据获取与展示：使用Retrofit调用API，支持多个平台的热搜数据获取，实现ViewModel + LiveData + Repository模式，通过switchMap实现平台切换时自动刷新数据，确保数据展示的实时性和准确性。
+	优化列表性能：使用Adapter + DiffUtil实现高效的列表更新，减少不必要的UI重绘，集成Glide加载图片并设置缓存策略，提升图片加载速度，解决列表滑动卡顿问题。
+	收藏功能：使用Room数据库存储收藏数据，支持添加/删除收藏操作，在后台线程执行数据库操作避免阻塞主线程，实现按平台和时间范围查询收藏，提升用户管理效率。
+	主题切换功能：使用AppCompatDelegate实现夜间模式切换，通过SharedPreferences持久化存储主题设置，解决主题切换时的UI一致性问题，提升用户体验。
+	分享功能：集成微信SDK，支持分享到微信好友和朋友圈，实现分享链接、标题和描述的功能，解决分享操作的异步处理问题，确保分享成功率。
+
+
+现在你是一名专业的面试官，上述是我最终的项目经历，针对我的项目每一点最少提出5个问题最可能会问的问题，按重要性排序。并给出答案。
