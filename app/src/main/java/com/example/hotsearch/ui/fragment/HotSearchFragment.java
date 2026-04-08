@@ -1,5 +1,6 @@
 package com.example.hotsearch.ui.fragment;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -43,6 +45,9 @@ public class HotSearchFragment extends Fragment {
     // 当前选中的平台
     private String currentPlatform;
 
+    private long fragmentCreateStartTime;
+    private long fragmentViewCreatedTime;
+
     private final Runnable clockRunnable = new Runnable() {
         @Override
         public void run() {
@@ -59,11 +64,13 @@ public class HotSearchFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Logger.d("onCreateView");
+        fragmentCreateStartTime = System.currentTimeMillis();
+        Logger.d("HotSearchFragment onCreateView 开始");
         // Fragment 的视图由 FragmentManager 管理：这里使用系统传入的 inflater/container 来创建 View
         // container 是 Fragment 要挂载到的父容器；attachToRoot 传 false 表示先不直接挂载，由系统在合适时机添加
         binding = FragmentHotSearchBinding.inflate(inflater, container, false);
-        Logger.d("HotSearchFragment onCreateView");
+        long createDuration = System.currentTimeMillis() - fragmentCreateStartTime;
+        Logger.d("HotSearchFragment onCreateView 完成，耗时: %dms", createDuration);
         // Fragment 通过返回根视图告诉系统“我的 UI 长什么样”，而不是像 Activity 那样 setContentView
         return binding.getRoot();
     }
@@ -71,7 +78,9 @@ public class HotSearchFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Logger.d("onViewCreated");
+        fragmentViewCreatedTime = System.currentTimeMillis();
+        long viewCreatedDuration = fragmentViewCreatedTime - fragmentCreateStartTime;
+        Logger.d("HotSearchFragment onViewCreated 开始，从onCreateView到现在耗时: %dms", viewCreatedDuration);
         viewModel = new ViewModelProvider(this).get(HotSearchViewModel.class);
 
         setupRecyclerView();
@@ -81,6 +90,7 @@ public class HotSearchFragment extends Fragment {
         observeData();
 
         clockHandler.post(clockRunnable);
+        Logger.d("HotSearchFragment onViewCreated 完成");
     }
 
     private void setupRecyclerView() {
@@ -188,7 +198,14 @@ public class HotSearchFragment extends Fragment {
     private void setupThemeToggle() {
         binding.themeToggle.setOnClickListener(v -> {
             Logger.d("用户点击主题切换按钮");
-            ThemeUtils.toggleTheme(requireActivity());
+            try {
+                Activity activity = requireActivity();
+                if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                    ThemeUtils.toggleTheme(activity);
+                }
+            } catch (IllegalStateException e) {
+                Logger.e("主题切换失败: %s", e.getMessage());
+            }
         });
     }
 
@@ -214,15 +231,15 @@ public class HotSearchFragment extends Fragment {
                     // 用来把“新的列表数据”提交给 Adapter，让它自动计算差异并刷新 RecyclerView。
                     adapter.submitList(resource.data);
                     
-                    binding.recyclerView.post(() -> {
-                        binding.recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
-                                new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                binding.recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    final RecyclerView recyclerView = binding.recyclerView;
+                    if (recyclerView != null) {
+                        // 延迟一点时间再恢复滚动位置，确保RecyclerView已经完成布局
+                        recyclerView.postDelayed(() -> {
+                            if (binding != null && binding.recyclerView != null) {
                                 if (hasScrollPosition) {
                                     LinearLayoutManager layoutManager = (LinearLayoutManager) binding.recyclerView.getLayoutManager();
                                     if (layoutManager != null) {
+                                        // 直接跳转到指定位置，减少视觉跳跃
                                         layoutManager.scrollToPositionWithOffset(scrollPosition, 0);
                                     }
                                 }
@@ -230,8 +247,8 @@ public class HotSearchFragment extends Fragment {
                                 Logger.i("列表渲染完成, 耗时: %dms, 恢复位置: %s%d",
                                         renderDuration, hasScrollPosition ? "item" : "无", scrollPosition);
                             }
-                        });
-                    });
+                        }, 50); // 50ms的延迟，确保RecyclerView已经完成布局
+                    }
                     break;
                 case ERROR:
                     Logger.e("数据状态: ERROR, 消息: %s", resource.message);
@@ -273,7 +290,8 @@ public class HotSearchFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Logger.d("onDestroyView");
+        long fragmentLifetime = System.currentTimeMillis() - fragmentCreateStartTime;
+        Logger.d("HotSearchFragment onDestroyView，生命周期耗时: %dms", fragmentLifetime);
         clockHandler.removeCallbacks(clockRunnable);
         binding = null;
     }

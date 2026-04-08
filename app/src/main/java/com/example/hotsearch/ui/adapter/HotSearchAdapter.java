@@ -96,17 +96,23 @@ public class HotSearchAdapter extends ListAdapter<HotSearchItem, HotSearchAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        long start = System.currentTimeMillis();
         // 使用 ViewBinding inflate item 布局（ItemHotSearchBinding 对应 item_hot_search.xml）
         ItemHotSearchBinding binding = ItemHotSearchBinding.inflate(
                 LayoutInflater.from(parent.getContext()), parent, false);
+        long duration = System.currentTimeMillis() - start;
+        Logger.d("创建ViewHolder耗时: %dms", duration);
         return new ViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        long start = System.currentTimeMillis();
         // ListAdapter 通过 getItem(position) 拿到当前项数据
         HotSearchItem item = getItem(position);
         holder.bind(item);
+        long duration = System.currentTimeMillis() - start;
+        Logger.d("绑定数据耗时: %dms, 位置: %d, 标题: %s", duration, position, item.getTitle());
     }
 
     /**

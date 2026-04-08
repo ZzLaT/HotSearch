@@ -16,6 +16,8 @@ import com.example.hotsearch.viewmodel.FavoriteViewModel;
 import com.orhanobut.logger.Logger;
 
 public class FavoriteFragment extends Fragment {
+    private long fragmentCreateStartTime;
+    private long fragmentViewCreatedTime;
     private FragmentFavoriteBinding binding;
     private FavoriteViewModel viewModel;
     private HotSearchAdapter adapter;
@@ -23,20 +25,26 @@ public class FavoriteFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Logger.d("onCreateView");
+        fragmentCreateStartTime = System.currentTimeMillis();
+        Logger.d("FavoriteFragment onCreateView 开始");
         binding = FragmentFavoriteBinding.inflate(inflater, container, false);
+        long createDuration = System.currentTimeMillis() - fragmentCreateStartTime;
+        Logger.d("FavoriteFragment onCreateView 完成，耗时: %dms", createDuration);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Logger.d("onViewCreated");
+        fragmentViewCreatedTime = System.currentTimeMillis();
+        long viewCreatedDuration = fragmentViewCreatedTime - fragmentCreateStartTime;
+        Logger.d("FavoriteFragment onViewCreated 开始，从onCreateView到现在耗时: %dms", viewCreatedDuration);
         viewModel = new ViewModelProvider(this).get(FavoriteViewModel.class);
 
         setupRecyclerView();
         setupFilters();
         observeFavorites();
+        Logger.d("FavoriteFragment onViewCreated 完成");
     }
 
     private void setupRecyclerView() {
@@ -96,7 +104,8 @@ public class FavoriteFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Logger.d("onDestroyView");
+        long fragmentLifetime = System.currentTimeMillis() - fragmentCreateStartTime;
+        Logger.d("FavoriteFragment onDestroyView，生命周期耗时: %dms", fragmentLifetime);
         binding = null;
     }
 }
