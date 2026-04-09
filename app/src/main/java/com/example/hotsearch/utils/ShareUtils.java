@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.Toast;
 
+import com.example.hotsearch.BuildConfig;
 import com.example.hotsearch.R;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
@@ -14,8 +15,7 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 public class ShareUtils {
 
-    // 替换为你的 AppID
-    private static final String WX_APP_ID = "YOUR_WECHAT_APPID";
+    private static final String WX_APP_ID = BuildConfig.WECHAT_APP_ID;
 
     private static IWXAPI iwxapi;
 

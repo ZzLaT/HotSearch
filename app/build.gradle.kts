@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -14,6 +17,36 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 读取 local.properties 文件
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            val localProperties = Properties()
+            localProperties.load(FileInputStream(localPropertiesFile))
+            
+            // 从 local.properties 读取 API_KEY
+            val apiKey = localProperties.getProperty("API_KEY", "")
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+            
+            // 从 local.properties 读取 WECHAT_APP_ID
+            val wechatAppId = localProperties.getProperty("WECHAT_APP_ID", "")
+            buildConfigField("String", "WECHAT_APP_ID", "\"$wechatAppId\"")
+            
+            // 从 local.properties 读取 QQ_APP_ID
+            val qqAppId = localProperties.getProperty("QQ_APP_ID", "")
+            buildConfigField("String", "QQ_APP_ID", "\"$qqAppId\"")
+            
+            // 配置 manifestPlaceholders，用于在 AndroidManifest.xml 中替换占位符
+            manifestPlaceholders["WECHAT_APP_ID"] = wechatAppId
+            manifestPlaceholders["QQ_APP_ID"] = qqAppId
+        } else {
+            // 如果 local.properties 不存在，使用空字符串
+            buildConfigField("String", "API_KEY", "\"\"")
+            buildConfigField("String", "WECHAT_APP_ID", "\"\"")
+            buildConfigField("String", "QQ_APP_ID", "\"\"")
+            manifestPlaceholders["WECHAT_APP_ID"] = ""
+            manifestPlaceholders["QQ_APP_ID"] = ""
+        }
     }
 
     buildTypes {

@@ -3,6 +3,7 @@ package com.example.hotsearch.repository;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.hotsearch.BuildConfig;
 import com.example.hotsearch.api.HotSearchService;
 import com.example.hotsearch.db.FavoriteDao;
 import com.example.hotsearch.model.HotSearchItem;
@@ -27,7 +28,7 @@ public class HotSearchRepository {
     private final HotSearchService service;
     private final FavoriteDao dao;
     private final AppExecutors executors;
-    private static final String API_KEY = "uapi-j5mgnnukpHXD3IN9cisUQMzSzw5iWJtB5HSLpBNL"; // Replace with your actual key from uapis.cn
+    private final String apiKey = BuildConfig.API_KEY;
 
     public HotSearchRepository(FavoriteDao dao, AppExecutors executors) {
         this.dao = dao; // 注入本地数据库 DAO，用于收藏数据的增删查
@@ -90,7 +91,7 @@ public class HotSearchRepository {
         Logger.d("开始获取热搜, 平台: %s", platform);
 
         // 构建Authorization头
-        String authorization = "Bearer " + API_KEY;
+        String authorization = "Bearer " + apiKey;
         // 发起 Retrofit 异步请求，避免阻塞主线程
         service.getHotSearch(platform, authorization).enqueue(new Callback<HotSearchResponse>() {
             @Override
